@@ -21,7 +21,51 @@ export function encode(encodedValue: string): string {
 
 }
 
-export function decode(valueToDecode: string): string {
+const isNumber = (value: string) => /[0-9]/.test(value)
 
-    return valueToDecode
+
+export function decode(valueToDecode: string): string {
+    return valueToDecode.split('')
+        .reduce<{ repeat: number, value: string }[]>((acc, value) => {
+            const lastEntry = acc.at(-1)
+
+            if (lastEntry) {
+                if (isNumber(value)) {
+                    if (lastEntry.value !== '') {
+                        acc.push({
+                            repeat: parseInt(value),
+                            value: '',
+                        })
+                    } else {
+                        lastEntry.repeat = lastEntry.repeat * 10 + parseInt(value)
+                    }
+                } else {
+                    if (lastEntry.value === '') {
+                        lastEntry.value = value
+                    } else {
+                        acc.push({
+                            repeat: 1,
+                            value,
+                        })
+                    }
+                }
+            } else {
+                if (isNumber(value)) {
+                    acc.push({
+                        repeat: parseInt(value),
+                        value: '',
+                    })
+                } else {
+                    acc.push({
+                        repeat: 1,
+                        value,
+                    })
+                }
+            }
+
+            return acc
+        }, [])
+        .reduce((acc, entry) => {
+            return acc + entry.value.repeat(entry.repeat)
+        }, '')
 }
